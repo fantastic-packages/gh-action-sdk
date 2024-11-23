@@ -20,6 +20,9 @@ group "bash setup.sh"
 [ ! -f setup.sh ] || bash setup.sh
 endgroup
 
+# rules
+! grep -qE "^config USE_APK$" Config-build.in || export USE_APK=y
+
 for d in bin logs; do
 	mkdir -p /artifacts/$d 2>/dev/null
 	ln -s /artifacts/$d $d
@@ -30,7 +33,12 @@ FEEDNAME="${FEEDNAME:-action}"
 BUILD_LOG="${BUILD_LOG:-1}"
 
 if [ -n "$KEY_BUILD" ]; then
-	echo "$KEY_BUILD" > key-build
+	if [ -n "$USE_APK" ]; then
+		echo "$KEY_BUILD" > private-key.pem
+		openssl ec -in private-key.pem -pubout > public-key.pem
+	else
+		echo "$KEY_BUILD" > key-build
+	fi
 	CONFIG_SIGNED_PACKAGES="y"
 fi
 
@@ -54,6 +62,10 @@ for EXTRA_FEED in $EXTRA_FEEDS; do
 	tr '|' ' ' <<< "$EXTRA_FEED" >> feeds.conf
 	ALL_CUSTOM_FEEDS+="$(cut -f2 -d'|' <<< "$EXTRA_FEED") "
 done
+
+group "USE_APK status"
+echo "USE_APK=$USE_APK"
+endgroup
 
 group "feeds.conf"
 cat feeds.conf
@@ -187,8 +199,8 @@ else
 fi
 
 if [ "$INDEX" = '1' ];then
-	group "make package/index"
-	make package/index
+	group "make package/index V=s"
+	make package/index V=s
 	endgroup
 fi
 
