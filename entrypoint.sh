@@ -20,6 +20,9 @@ group "bash setup.sh"
 [ ! -f setup.sh ] || bash setup.sh
 endgroup
 
+# rules
+! grep -qE "^config USE_APK$" Config-build.in || export USE_APK=y
+
 for d in bin logs; do
 	mkdir -p /artifacts/$d 2>/dev/null
 	ln -s /artifacts/$d $d
@@ -37,6 +40,7 @@ fi
 
 if [ -n "$PRIVATE_KEY" ]; then
 	echo "$PRIVATE_KEY" > private-key.pem
+	openssl ec -in private-key.pem -pubout > public-key.pem
 	CONFIG_SIGNED_PACKAGES="y"
 fi
 
@@ -60,6 +64,10 @@ for EXTRA_FEED in $EXTRA_FEEDS; do
 	tr '|' ' ' <<< "$EXTRA_FEED" >> feeds.conf
 	ALL_CUSTOM_FEEDS+="$(cut -f2 -d'|' <<< "$EXTRA_FEED") "
 done
+
+group "USE_APK status"
+echo "USE_APK=$USE_APK"
+endgroup
 
 group "feeds.conf"
 cat feeds.conf
