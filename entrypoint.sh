@@ -20,6 +20,7 @@ group "bash setup.sh"
 [ ! -f setup.sh ] || bash setup.sh
 endgroup
 
+# Initialize bin/ dl/ feeds/ logs/ symlike
 for d in bin logs; do
 	mkdir -p /artifacts/$d 2>/dev/null
 	ln -s /artifacts/$d $d
@@ -30,6 +31,7 @@ rm -rf dl; ln -s /dl dl
 FEEDNAME="${FEEDNAME:-action}"
 BUILD_LOG="${BUILD_LOG:-1}"
 
+# opkg key-build
 if [ -n "$KEY_BUILD" ]; then
 	echo "$KEY_BUILD" > key-build
 	CONFIG_SIGNED_PACKAGES="y"
@@ -90,7 +92,6 @@ else
 	for PKG in $PACKAGES; do
 		for FEED in $ALL_CUSTOM_FEEDS; do
 			group "feeds install -p $FEED -f $PKG"
-			echo "Try to installing $PKG from $FEED"
 			./scripts/feeds install -p "$FEED" -f "$PKG"
 			endgroup
 		done
