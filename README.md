@@ -34,7 +34,7 @@ jobs:
           fetch-depth: 0
 
       - name: Build
-        uses: openwrt/gh-action-sdk@main
+        uses: fantastic-packages/gh-action-sdk@master
         env:
           ARCH: ${{ matrix.arch }}
 
@@ -70,7 +70,7 @@ The action reads a few env variables:
 * `KEY_BUILD` can be a private Signify/`usign` key to sign the packages (ipk) feed.
 * `PRIVATE_KEY` can be a private key to sign the packages (apk) feed.
 * `NO_DEFAULT_FEEDS` disable adding the default SDK feeds
-* `NO_REPO_FEEDS` disable adding the default working directory as feeds
+* `NO_REPO_FEEDS` disable adding the `FEED_DIR` as feeds
 * `NO_REFRESH_CHECK` disable check if patches need a refresh.
 * `NO_SHFMT_CHECK` disable check if init files are formated
 * `PACKAGES` (Optional) specify the list of packages (space separated) to be built
