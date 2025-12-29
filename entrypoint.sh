@@ -187,6 +187,7 @@ else
 			continue
 		fi
 
+		group "make package/$PKG/compile"
 		make \
 			BUILD_LOG="$BUILD_LOG" \
 			IGNORE_ERRORS="$IGNORE_ERRORS" \
@@ -197,6 +198,7 @@ else
 				RET=$?
 				break
 			}
+		endgroup
 	done
 fi
 
