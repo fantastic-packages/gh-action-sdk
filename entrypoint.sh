@@ -14,19 +14,32 @@ endgroup() {
 }
 trap 'endgroup' ERR
 
+group "download setup.sh"
+wget -O setup.tar.gz https://codeload.github.com/openwrt/docker/tar.gz/refs/heads/main
+tar xf setup.tar.gz --strip=1 --no-same-owner -C .
+rm -vrf setup.tar.gz
+
+sed -i 's|/builder/keys/|keys/|g' setup.sh
+sed -i '/wget .*\$file_name/{s|wget -nv|axel -q -H "'"User-Agent: $USER_AGENT"'" -n8|g}' setup.sh
+
+echo -e "\nsetup.sh START"
+cat setup.sh
+echo -e "setup.sh END\n"
+endgroup
+
 group "bash setup.sh"
 # snapshot containers don't ship with the SDK to save bandwidth
 # run setup.sh to download and extract the SDK
-[ ! -f setup.sh ] || bash setup.sh
+bash setup.sh
 endgroup
 
 # Initialize bin/ dl/ feeds/ logs/ symlike
 for d in bin logs; do
-	mkdir -p /artifacts/$d 2>/dev/null
-	ln -s /artifacts/$d $d
+	mkdir -p $artifacts_dir/$d 2>/dev/null
+	ln -s $artifacts_dir/$d $d
 done
-ln -s /feeds feeds
-rm -rf dl; ln -s /dl dl
+[ -z "$FEEDS_DIR" ] || ln -s "$FEEDS_DIR" feeds
+[ -z "$DL_DIR" ] || { rm -rf dl; ln -s "$DL_DIR" dl; }
 
 FEEDNAME="${FEEDNAME:-action}"
 BUILD_LOG="${BUILD_LOG:-1}"
@@ -48,7 +61,7 @@ fi
 ALL_CUSTOM_FEEDS=
 
 if [ -z "$NO_REPO_FEEDS" ]; then
-	echo "src-link $FEEDNAME /feed/" >> feeds.conf
+	echo "src-link $FEEDNAME $feed_dir/" >> feeds.conf
 	ALL_CUSTOM_FEEDS+="$FEEDNAME "
 fi
 
@@ -140,7 +153,7 @@ else
 			exit 1
 		fi
 
-		PATCHES_DIR=$(find /feed -path "*/$PKG/patches")
+		PATCHES_DIR=$(find $feed_dir -path "*/$PKG/patches")
 		if [ -d "$PATCHES_DIR" ] && [ -z "$NO_REFRESH_CHECK" ]; then
 			group "make package/$PKG/refresh"
 			make \
@@ -163,7 +176,7 @@ else
 			endgroup
 		fi
 
-		FILES_DIR=$(find /feed -path "*/$PKG/files")
+		FILES_DIR=$(find $feed_dir -path "*/$PKG/files")
 		if [ -d "$FILES_DIR" ] && [ -z "$NO_SHFMT_CHECK" ]; then
 			find "$FILES_DIR" -name "*.init" -exec shfmt -w -sr -s '{}' \;
 			if ! git -C "$FILES_DIR" diff --quiet -- .; then

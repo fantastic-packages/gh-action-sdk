@@ -20,13 +20,16 @@ on:
 
 jobs:
   build:
-    name: ${{ matrix.arch }} build
+    name: ${{ matrix.release }} ${{ matrix.target }} build
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch:
-          - x86_64
-          - mips_24kc
+        release:
+          - master
+          - 24.10.1
+        target:
+          - ath79/generic
+          - x86/64
 
     steps:
       - uses: actions/checkout@v2
@@ -36,7 +39,8 @@ jobs:
       - name: Build
         uses: fantastic-packages/gh-action-sdk@master
         env:
-          ARCH: ${{ matrix.arch }}
+          TARGET: ${{ matrix.target }}
+          VERSION: ${{ matrix.release }}
 
       - name: Store packages
         uses: actions/upload-artifact@v2
@@ -49,16 +53,15 @@ jobs:
 
 The action reads a few env variables:
 
-* `ARCH` determines the used OpenWrt SDK Docker container.
-  E.g. `x86_64` or `x86_64-22.03.2`.
+* `TARGET` determines the used OpenWrt SDK target.
+  E.g. `x86/64` or `ath79/generic`.
+* `VERSION` determines the used OpenWrt SDK version.
+  E.g. `24.10.5` or `24.10-SNAPSHOT` or `snapshots`.
 * `ARTIFACTS_DIR` determines where built packages and build logs are saved.
   Defaults to the default working directory (`GITHUB_WORKSPACE`).
-* `FEEDS_DIR` determines where download feeds repo are saved.
-  Defaults to the default working directory (`GITHUB_WORKSPACE`).
-* `DL_DIR` determines where download source code packages are saved.
-  Defaults to the default working directory (`GITHUB_WORKSPACE`).
+* `FEEDS_DIR` (Optional) determines where download feeds repo are saved.
+* `DL_DIR` (Optional) determines where download source code packages are saved.
 * `BUILD_LOG` stores build logs in `./logs`.
-* `CONTAINER` can set other SDK containers than `openwrt/sdk`.
 * `EXTRA_FEEDS` are added to the `feeds.conf`, where `|` are replaced by white
   spaces.
 * `FEED_DIR` used in the created `feeds.conf` for the current repo. Defaults to

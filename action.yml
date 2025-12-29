@@ -4,64 +4,73 @@ author: aparcar
 runs:
   using: 'composite'
   steps:
-    - run: |
+    - env:
+        WORKING_DIRECTORY_NAME: GH-ACTION-SDK
+      run: |
+        # GITHUB_ENV
+        echo "WORKING_DIRECTORY_NAME=$WORKING_DIRECTORY_NAME" >> "$GITHUB_ENV"
+        # GITHUB_OUTPUT
+        echo "version_path=$([ -z "$VERSION" ] || grep -qE "^(main|master|snapshots?)$" <<< "$VERSION" || echo "releases/$VERSION")" >> "$GITHUB_OUTPUT"
         echo "artifacts_dir=${ARTIFACTS_DIR:-$GITHUB_WORKSPACE}" >> "$GITHUB_OUTPUT"
         echo "feed_dir=${FEED_DIR:-$GITHUB_WORKSPACE}" >> "$GITHUB_OUTPUT"
-        echo "feeds_dir=${FEEDS_DIR:-$GITHUB_WORKSPACE}" >> "$GITHUB_OUTPUT"
-        echo "dl_dir=${DL_DIR:-$GITHUB_WORKSPACE}" >> "$GITHUB_OUTPUT"
       shell: bash
       id: inputs
-    - run: sudo chown -R 1000:1000 ${{ steps.inputs.outputs.artifacts_dir }} ${{ steps.inputs.outputs.feed_dir }} ${{ steps.inputs.outputs.feeds_dir }} ${{ steps.inputs.outputs.dl_dir }}
+
+    - env:
+        DEBIAN_FRONTEND: noninteractive
       shell: bash
-    -
-      name: Set up Docker QEMU
-      uses: docker/setup-qemu-action@v3
-    -
-      name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-    -
-      name: Build Docker container image
-      uses: docker/build-push-action@v6
-      env:
-        DOCKER_BUILD_SUMMARY: false
-      with:
-        push: false
-        tags: sdk
-        context: ${{ github.action_path }}
-        build-args: |
-          CONTAINER
-          ARCH
-        load: true
+      run: |
+        echo "Initialize Developmen Environment"
+        # https://openwrt.org/docs/guide-developer/toolchain/install-buildsystem
+        # https://github.com/openwrt/buildbot/blob/main/docker/buildworker/Dockerfile#L14
+        #
+        group() {
+          endgroup
+          echo "::group::  $1"
+          GROUP=1
+        }
+        endgroup() {
+          if [ -n "$GROUP" ]; then
+            echo "::endgroup::"
+          fi
+          GROUP=
+        }
+        trap 'endgroup' ERR
+        #
+        group "apt update"
+        sudo apt update
+        sudo apt -y install bison build-essential ccache clang curl file flex \
+        g++ g++-multilib gawk gcc-multilib genisoimage gettext git git-core gosu \
+        libdw-dev libelf-dev libncurses5-dev libssl-dev locales pv pwgen python3 \
+        python3-cryptography python3-pip python3-pyelftools python3-setuptools \
+        python3-venv qemu-utils rsync signify-openbsd subversion swig unzip wget \
+        zlib1g-dev zstd \
+        jq axel clang llvm libbpf-dev pkg-config libdw-dev libelf-dev zlib1g-dev
+        endgroup
 
     - run: |
-        docker run --rm \
-          --env BUILD_LOG \
-          --env EXTRA_FEEDS \
-          --env FEEDNAME \
-          --env IGNORE_ERRORS \
-          --env KEY_BUILD \
-          --env NO_DEFAULT_FEEDS \
-          --env NO_REPO_FEEDS \
-          --env NO_REFRESH_CHECK \
-          --env NO_SHFMT_CHECK \
-          --env PACKAGES \
-          --env INDEX \
-          --env V \
-          -v ${{ steps.inputs.outputs.artifacts_dir }}:/artifacts \
-          -v ${{ steps.inputs.outputs.feed_dir }}:/feed \
-          -v ${{ steps.inputs.outputs.feeds_dir }}:/feeds \
-          -v ${{ steps.inputs.outputs.dl_dir }}:/dl \
-          sdk
+        echo "Initialize Working directory"
+        mkdir ${{ env.WORKING_DIRECTORY_NAME }}
       shell: bash
-    - run: sudo chown -R --reference=${{ steps.inputs.outputs.artifacts_dir }}/.. ${{ steps.inputs.outputs.artifacts_dir }}
+
+    - id: build_sdk
+      env:
+        # entrypoint.sh
+        USER_AGENT: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36'
+        artifacts_dir: ${{ steps.inputs.outputs.artifacts_dir }}
+        feed_dir: ${{ steps.inputs.outputs.feed_dir }}
+        # setup.sh
+        TARGET: ${{ env.TARGET }}
+        VERSION_PATH: ${{ steps.inputs.outputs.version_path }}
+        FILE_HOST: #https://downloads.openwrt.org
+        DOWNLOAD_FILE: sdk-.*x86_64.tar.[xz|zst]
       shell: bash
-      if: always()
-    - run: sudo chown -R --reference=${{ steps.inputs.outputs.feed_dir }}/.. ${{ steps.inputs.outputs.feed_dir }}
+      run: |
+        echo "Build OpenWrt SDK"
+        cd ${{ env.WORKING_DIRECTORY_NAME }}
+        bash ${{ github.action_path }}/entrypoint.sh
+
+    - run: |
+        echo "Remove Working directory"
+        rm -rf ${{ env.WORKING_DIRECTORY_NAME }}
       shell: bash
-      if: always()
-    - run: sudo chown -R --reference=${{ steps.inputs.outputs.feeds_dir }}/.. ${{ steps.inputs.outputs.feeds_dir }}
-      shell: bash
-      if: always()
-    - run: sudo chown -R --reference=${{ steps.inputs.outputs.dl_dir }}/.. ${{ steps.inputs.outputs.dl_dir }}
-      shell: bash
-      if: always()
