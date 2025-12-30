@@ -1,6 +1,6 @@
 name: "OpenWrt SDK"
 description: "Build OpenWrt packages via the SDK"
-author: aparcar
+author: muink
 runs:
   using: 'composite'
   steps:
@@ -20,7 +20,7 @@ runs:
         DEBIAN_FRONTEND: noninteractive
       shell: bash
       run: |
-        echo "Initialize Developmen Environment"
+        echo "◆ Initialize Developmen Environment"
         # https://openwrt.org/docs/guide-developer/toolchain/install-buildsystem
         # https://github.com/openwrt/buildbot/blob/main/docker/buildworker/Dockerfile#L14
         #
@@ -49,7 +49,7 @@ runs:
         endgroup
 
     - run: |
-        echo "Initialize Working directory"
+        echo "◆ Initialize Working directory"
         mkdir ${{ env.WORKING_DIRECTORY_NAME }}
       shell: bash
 
@@ -66,11 +66,11 @@ runs:
         DOWNLOAD_FILE: sdk-.*x86_64.tar.[xz|zst]
       shell: bash
       run: |
-        echo "Build OpenWrt SDK"
+        echo "◆ Build OpenWrt SDK"
         cd ${{ env.WORKING_DIRECTORY_NAME }}
         bash ${{ github.action_path }}/entrypoint.sh
 
     - run: |
-        echo "Remove Working directory"
+        echo "◆ Remove Working directory"
         rm -rf ${{ env.WORKING_DIRECTORY_NAME }}
       shell: bash

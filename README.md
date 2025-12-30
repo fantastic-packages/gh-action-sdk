@@ -27,9 +27,14 @@ jobs:
         release:
           - master
           - 24.10.1
-        target:
-          - ath79/generic
-          - x86/64
+        arch:
+          - mips_24kc
+          - x86_64
+        include:
+          - arch: mips_24kc
+            target: ath79/generic
+          - arch: x86_64
+            target: x86/64
 
     steps:
       - uses: actions/checkout@v2
