@@ -20,7 +20,8 @@ tar xf setup.tar.gz --strip=1 --no-same-owner -C .
 rm -vrf setup.tar.gz
 
 sed -i 's|/builder/keys/|keys/|g' setup.sh
-sed -i '/wget .*\$file_name/{s|wget -nv|axel -q -H "'"User-Agent: $USER_AGENT"'" -n8|g}' setup.sh
+[ "$SDK_CACHE" = "true" ] && sed -i '/wget .*\$file_name/d' setup.sh \
+|| sed -i '/wget .*\$file_name/{s|wget -nv|axel -q -H "'"User-Agent: $USER_AGENT"'" -n8|g}' setup.sh
 
 echo -e "\nsetup.sh START"
 cat setup.sh

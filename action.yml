@@ -94,7 +94,10 @@ runs:
 
     - id: build_sdk
       env:
+        # cache.sh
+        SINGLE_FILE_LIMIT: 80
         # entrypoint.sh
+        SDK_CACHE: ${{ inputs.sdk_cache }}
         USER_AGENT: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36'
         artifacts_dir: ${{ steps.inputs.outputs.artifacts_dir }}
         feed_dir: ${{ steps.inputs.outputs.feed_dir }}
@@ -105,6 +108,12 @@ runs:
         DOWNLOAD_FILE: sdk-.*x86_64.tar.[xz|zst]
       shell: bash
       run: |
+        if [ "$SDK_CACHE" = "true" ]; then
+          echo "◆ Update and use ${{ env.VERSION_PATH }}/${{ env.TARGET }} IB/SDk Cache"
+          pushd ${{ env.CACHE_REPOSITORY_NAME }}
+          bash ${{ github.action_path }}/cache.sh
+          popd
+        fi
         echo "◆ Build OpenWrt SDK"
         cd ${{ env.WORKING_DIRECTORY_NAME }}
         bash ${{ github.action_path }}/entrypoint.sh
