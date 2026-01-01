@@ -58,6 +58,8 @@ jobs:
 
 The action reads a few env variables:
 
+* `FILE_HOST` determines the used OpenWrt download server.
+  E.g. `https://downloads.openwrt.org` or `https://mirrors.cicku.me/openwrt`.
 * `TARGET` determines the used OpenWrt SDK target.
   E.g. `x86/64` or `ath79/generic`.
 * `VERSION` determines the used OpenWrt SDK version.

@@ -62,7 +62,7 @@ runs:
         # setup.sh
         TARGET: ${{ env.TARGET }}
         VERSION_PATH: ${{ steps.inputs.outputs.version_path }}
-        FILE_HOST: #https://downloads.openwrt.org
+        FILE_HOST: ${{ env.UPSTREAM_URL || env.FILE_HOST }}
         DOWNLOAD_FILE: sdk-.*x86_64.tar.[xz|zst]
       shell: bash
       run: |
