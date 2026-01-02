@@ -72,6 +72,18 @@ group "make defconfig"
 make defconfig
 endgroup
 
+group "llvm.download-ci-llvm fix"
+# Set Rust build arg llvm.download-ci-llvm to false.
+unCI() {
+	unset CI GITHUB_ACTIONS
+	local func="$1"; shift
+	if [ -n "$func" ]; then
+		"$func" "$@"
+	fi
+}
+#sed -i 's|\(--set=llvm\.download-ci-llvm\)=true|\1=false|' feeds/packages/lang/rust/Makefile
+endgroup
+
 if [ -z "$PACKAGES" ]; then
 	# compile all packages in feed
 	for FEED in $ALL_CUSTOM_FEEDS; do
@@ -178,7 +190,7 @@ else
 		fi
 
 		group "make package/$PKG/compile"
-		make \
+		unCI make \
 			BUILD_LOG="$BUILD_LOG" \
 			IGNORE_ERRORS="$IGNORE_ERRORS" \
 			CONFIG_AUTOREMOVE=y \
