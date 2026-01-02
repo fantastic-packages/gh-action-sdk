@@ -37,7 +37,7 @@ endgroup
 # rules
 ! grep -qE "^config USE_APK$" Config-build.in || export USE_APK=y
 
-# Initialize bin/ dl/ feeds/ logs/ symlike
+# Initialize bin/ dl/ feeds/ logs/ symlink
 for d in bin logs; do
 	mkdir -p $artifacts_dir/$d 2>/dev/null
 	ln -s $artifacts_dir/$d $d

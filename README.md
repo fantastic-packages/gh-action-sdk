@@ -8,7 +8,7 @@ repositories.
 ## Example usage
 
 The following YAML code can be used to build all packages of a repository and
-store created `ipk` files as artifacts.
+store created `apk` files as artifacts.
 
 ```yaml
 name: Test Build
@@ -54,7 +54,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.arch}}-packages
-          path: bin/packages/${{ matrix.arch }}/packages/*.ipk
+          path: bin/packages/${{ matrix.arch }}/packages/*.apk
 ```
 
 ## Environmental variables
