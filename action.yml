@@ -1,14 +1,22 @@
 name: "OpenWrt SDK"
 description: "Build OpenWrt packages via the SDK"
 author: muink
+inputs:
+  sdk_cache:
+    description: 'enable caching for downloaded SDK'
+    default: false
+  token:
+    description: 'Used to push content to openwrt.org-cache'
 runs:
   using: 'composite'
   steps:
     - env:
         WORKING_DIRECTORY_NAME: GH-ACTION-SDK
+        CACHE_REPOSITORY_NAME: openwrt.org-cache
       run: |
         # GITHUB_ENV
         echo "WORKING_DIRECTORY_NAME=$WORKING_DIRECTORY_NAME" >> "$GITHUB_ENV"
+        echo "CACHE_REPOSITORY_NAME=$CACHE_REPOSITORY_NAME" >> "$GITHUB_ENV"
         # GITHUB_OUTPUT
         echo "version_path=$([ -z "$VERSION" ] || grep -qE "^(main|master|snapshots?)$" <<< "$VERSION" || echo "releases/$VERSION")" >> "$GITHUB_OUTPUT"
         echo "artifacts_dir=${ARTIFACTS_DIR:-$GITHUB_WORKSPACE}" >> "$GITHUB_OUTPUT"
@@ -53,9 +61,43 @@ runs:
         mkdir ${{ env.WORKING_DIRECTORY_NAME }}
       shell: bash
 
+    - if: inputs.sdk_cache == 'true' && !cancelled()
+      uses: actions/checkout@v6
+      with:
+        token: ${{ inputs.token }}
+        repository: ${{ github.repository_owner }}/${{ env.CACHE_REPOSITORY_NAME }}
+        ref: main
+        path: ${{ env.CACHE_REPOSITORY_NAME }}
+
+    - if: inputs.sdk_cache == 'true' && !cancelled()
+      env:
+        TARGETBRANCH: ${{ steps.inputs.outputs.version_path || 'snapshots' }}
+      shell: bash
+      run: |
+        echo "◆ Checkout ${{ env.TARGETBRANCH }}/${{ env.TARGET }} IB/SDk Cache"
+        cd ${{ env.CACHE_REPOSITORY_NAME }}
+        git config --local user.name "GitHub Action"
+        git config --local user.email "actions-user@users.noreply.github.com"
+        #
+        rcode=$(curl -sL -w '%{http_code}' -o /dev/null https://github.com/${{ github.repository_owner }}/${{ env.CACHE_REPOSITORY_NAME }}/tree/${{ env.TARGETBRANCH }}/${{ env.TARGET }})
+        #
+        if [ "$rcode" = "404" ]; then
+          git checkout --orphan ${{ env.TARGETBRANCH }}/${{ env.TARGET }}
+          git reset .
+          git commit -m '' --allow-empty --allow-empty-message
+          git commit -m "Waiting to upload" --allow-empty
+          git push --set-upstream origin ${{ env.TARGETBRANCH }}/${{ env.TARGET }}
+        else
+          git fetch origin ${{ env.TARGETBRANCH }}/${{ env.TARGET }}
+          git checkout -b ${{ env.TARGETBRANCH }}/${{ env.TARGET }} --track origin/${{ env.TARGETBRANCH }}/${{ env.TARGET }}
+        fi
+
     - id: build_sdk
       env:
+        # cache.sh
+        SINGLE_FILE_LIMIT: 80
         # entrypoint.sh
+        SDK_CACHE: ${{ inputs.sdk_cache }}
         USER_AGENT: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36'
         artifacts_dir: ${{ steps.inputs.outputs.artifacts_dir }}
         feed_dir: ${{ steps.inputs.outputs.feed_dir }}
@@ -66,11 +108,17 @@ runs:
         DOWNLOAD_FILE: sdk-.*x86_64.tar.[xz|zst]
       shell: bash
       run: |
+        if [ "$SDK_CACHE" = "true" ]; then
+          echo "◆ Update and use ${{ env.VERSION_PATH }}/${{ env.TARGET }} IB/SDk Cache"
+          pushd ${{ env.CACHE_REPOSITORY_NAME }}
+          bash ${{ github.action_path }}/cache.sh
+          popd
+        fi
         echo "◆ Build OpenWrt SDK"
         cd ${{ env.WORKING_DIRECTORY_NAME }}
         bash ${{ github.action_path }}/entrypoint.sh
 
     - run: |
         echo "◆ Remove Working directory"
-        rm -rf ${{ env.WORKING_DIRECTORY_NAME }}
+        rm -rf ${{ env.WORKING_DIRECTORY_NAME }} ${{ env.CACHE_REPOSITORY_NAME }}
       shell: bash
