@@ -42,7 +42,7 @@ jobs:
           fetch-depth: 0
 
       - name: Build
-        uses: fantastic-packages/gh-action-sdk@master
+        uses: fantastic-packages/gh-action-sdk@24.10
         env:
           TARGET: ${{ matrix.target }}
           VERSION: ${{ matrix.release }}
