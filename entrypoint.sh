@@ -94,6 +94,7 @@ group "feeds update -a"
 err=1 && rtry=0 && until [ $err = 0 -o $rtry -gt 10 ]; do
 	./scripts/feeds update -a && err=0 || { err=$?; let rtry++; }
 done
+[ "$err" = "0" ] || exit $err
 endgroup
 
 group "make defconfig"
