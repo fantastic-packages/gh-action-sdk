@@ -53,7 +53,7 @@ runs:
         python3-cryptography python3-pip python3-pyelftools python3-setuptools \
         python3-venv qemu-utils rsync signify-openbsd subversion swig unzip wget \
         zlib1g-dev zstd \
-        jq axel clang llvm libbpf-dev pkg-config libdw-dev libelf-dev zlib1g-dev
+        jq axel clang libelf-dev zlib1g-dev
         endgroup
 
     - run: |
