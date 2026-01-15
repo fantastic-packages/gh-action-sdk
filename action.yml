@@ -2,7 +2,7 @@ name: "OpenWrt SDK"
 description: "Build OpenWrt packages via the SDK"
 author: muink
 inputs:
-  sdk_cache:
+  cache:
     description: 'enable caching for downloaded SDK'
     default: false
   token:
@@ -61,7 +61,7 @@ runs:
         mkdir ${{ env.WORKING_DIRECTORY_NAME }}
       shell: bash
 
-    - if: inputs.sdk_cache == 'true' && !cancelled()
+    - if: inputs.cache == 'true' && !cancelled()
       uses: actions/checkout@v6
       with:
         token: ${{ inputs.token }}
@@ -69,7 +69,7 @@ runs:
         ref: main
         path: ${{ env.CACHE_REPOSITORY_NAME }}
 
-    - if: inputs.sdk_cache == 'true' && !cancelled()
+    - if: inputs.cache == 'true' && !cancelled()
       env:
         TARGETBRANCH: ${{ steps.inputs.outputs.version_path || 'snapshots' }}
       shell: bash
@@ -97,7 +97,7 @@ runs:
         # cache.sh
         SINGLE_FILE_LIMIT: 80
         # entrypoint.sh
-        SDK_CACHE: ${{ inputs.sdk_cache }}
+        CACHE: ${{ inputs.cache }}
         USER_AGENT: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36'
         artifacts_dir: ${{ steps.inputs.outputs.artifacts_dir }}
         feed_dir: ${{ steps.inputs.outputs.feed_dir }}
@@ -108,7 +108,7 @@ runs:
         DOWNLOAD_FILE: sdk-.*x86_64.tar.[xz|zst]
       shell: bash
       run: |
-        if [ "$SDK_CACHE" = "true" ]; then
+        if [ "$CACHE" = "true" ]; then
           echo "◆ Update and use ${{ env.VERSION_PATH }}/${{ env.TARGET }} IB/SDk Cache"
           pushd ${{ env.CACHE_REPOSITORY_NAME }}
           bash ${{ github.action_path }}/cache.sh
