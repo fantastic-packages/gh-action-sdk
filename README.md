@@ -25,7 +25,7 @@ jobs:
     strategy:
       matrix:
         release:
-          - master
+          - snapshots
           - 24.10.1
         arch:
           - mips_24kc

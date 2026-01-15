@@ -18,7 +18,7 @@ runs:
         echo "WORKING_DIRECTORY_NAME=$WORKING_DIRECTORY_NAME" >> "$GITHUB_ENV"
         echo "CACHE_REPOSITORY_NAME=$CACHE_REPOSITORY_NAME" >> "$GITHUB_ENV"
         # GITHUB_OUTPUT
-        echo "version_path=$([ -z "$VERSION" ] || grep -qE "^(main|master|snapshots?)$" <<< "$VERSION" || echo "releases/$VERSION")" >> "$GITHUB_OUTPUT"
+        echo "version_path=$([ -z "$VERSION" ] || echo "releases/$VERSION")" >> "$GITHUB_OUTPUT"
         echo "artifacts_dir=${ARTIFACTS_DIR:-$GITHUB_WORKSPACE}" >> "$GITHUB_OUTPUT"
         echo "feed_dir=${FEED_DIR:-$GITHUB_WORKSPACE}" >> "$GITHUB_OUTPUT"
       shell: bash
