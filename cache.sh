@@ -5,6 +5,7 @@ set -e
 TARGET="${TARGET:-x86/64}"
 VERSION_PATH="${VERSION_PATH:-snapshots}"
 FILE_HOST="${UPSTREAM_URL:-${FILE_HOST:-https://downloads.openwrt.org}}"
+DOWNLOAD_TYPE="${DOWNLOAD_TYPE:-imagebuilder}"
 DOWNLOAD_FILE="${DOWNLOAD_FILE:-imagebuilder-.*x86_64.tar.[xz|zst]}"
 DOWNLOAD_PATH="$VERSION_PATH/targets/$TARGET"
 
@@ -13,6 +14,9 @@ wget -nv "$FILE_HOST/$DOWNLOAD_PATH/sha256sums" -O sha256sums
 # determine archive name
 file_name="$(grep "$DOWNLOAD_FILE" sha256sums | cut -d "*" -f 2)"
 file_hash="$(grep "$DOWNLOAD_FILE" sha256sums | cut -d " " -f 1)"
+
+mkdir -p $DOWNLOAD_TYPE 2>/dev/null
+pushd $DOWNLOAD_TYPE
 
 # check and get imagebuilder/sdk archive
 need_update=1
@@ -54,3 +58,5 @@ if [ -n "$need_update" ]; then
 	git push -f
 	echo "IB/SDK upload successful"
 fi
+
+popd

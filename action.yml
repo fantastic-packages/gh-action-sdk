@@ -105,6 +105,7 @@ runs:
         TARGET: ${{ env.TARGET }}
         VERSION_PATH: ${{ steps.inputs.outputs.version_path }}
         FILE_HOST: ${{ env.UPSTREAM_URL || env.FILE_HOST }}
+        DOWNLOAD_TYPE: sdk
         DOWNLOAD_FILE: sdk-.*x86_64.tar.[xz|zst]
       shell: bash
       run: |
