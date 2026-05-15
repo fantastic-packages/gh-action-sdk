@@ -71,6 +71,7 @@ The action reads a few env variables:
   Defaults to the default working directory (`GITHUB_WORKSPACE`).
 * `FEEDS_DIR` (Optional) determines where download feeds repo are saved.
 * `DL_DIR` (Optional) determines where download source code packages are saved.
+* `BUILD` build packages or just check. Default is 1. Set to 0 to enable.
 * `BUILD_LOG` stores build logs in `./logs`.
 * `EXTRA_FEEDS` are added to the `feeds.conf`, where `|` are replaced by white
   spaces.

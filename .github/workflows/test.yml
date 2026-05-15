@@ -12,8 +12,8 @@ jobs:
       matrix:
         release:
           - master
-          - 24.10.1
-          - 23.05.5
+          - 25.12.3
+          - 24.10.6
         arch:
           - aarch64_generic
           - mips_24kc
