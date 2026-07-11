@@ -33,6 +33,14 @@ group "bash setup.sh"
 bash setup.sh
 endgroup
 
+# rules
+make defconfig
+export ARCH_PACKAGES=$(make val.ARCH_PACKAGES)
+export BUILD_KEY="$(make val.BUILD_KEY)"
+export STAGING_DIR_HOST="$(make val.STAGING_DIR_HOST)"
+PATHBK="$PATH"
+export PATH="$STAGING_DIR_HOST/bin:$PATH"
+
 # Initialize bin/ dl/ feeds/ logs/ symlink
 for d in bin logs; do
 	mkdir -p $artifacts_dir/$d 2>/dev/null
@@ -48,7 +56,7 @@ BUILD_LOG="${BUILD_LOG:-1}"
 
 # opkg key-build
 if [ -n "$KEY_BUILD" ]; then
-	echo "$KEY_BUILD" > key-build
+	echo "$KEY_BUILD" > $BUILD_KEY
 	CONFIG_SIGNED_PACKAGES="y"
 fi
 
@@ -231,5 +239,13 @@ if [ "$INDEX" = '1' ];then
 	make package/index
 	endgroup
 fi
+
+./scripts/feeds list -s -f | grep -v 'github.com/openwrt/' > bin/packages/$ARCH_PACKAGES/feeds.conf
+
+pushd bin/packages/$ARCH_PACKAGES
+	find . -type f -not -name 'sha256sums' -printf "%P\n" \
+		| sort | xargs -r $STAGING_DIR_HOST/bin/mkhash -n sha256 \
+		| sed -ne 's|^\(.*\) \(.*\)$|\1 *\2|p' > sha256sums
+popd
 
 exit "$RET"
