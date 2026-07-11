@@ -35,7 +35,8 @@ bash setup.sh
 endgroup
 
 # rules
-! grep -qE "^config USE_APK$" Config-build.in || export USE_APK=y
+make defconfig
+export USE_APK=$(make val.CONFIG_USE_APK)
 
 # Initialize bin/ dl/ feeds/ logs/ symlink
 for d in bin logs; do
