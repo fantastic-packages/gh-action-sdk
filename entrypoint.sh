@@ -37,6 +37,13 @@ endgroup
 # rules
 make defconfig
 export USE_APK=$(make val.CONFIG_USE_APK)
+export ARCH_PACKAGES=$(make val.ARCH_PACKAGES)
+export BUILD_KEY="$(make val.BUILD_KEY)"
+export BUILD_KEY_APK_SEC="$(make val.BUILD_KEY_APK_SEC)"
+export BUILD_KEY_APK_PUB="$(make val.BUILD_KEY_APK_PUB)"
+export STAGING_DIR_HOST="$(make val.STAGING_DIR_HOST)"
+PATHBK="$PATH"
+export PATH="$STAGING_DIR_HOST/bin:$PATH"
 
 # Initialize bin/ dl/ feeds/ logs/ symlink
 for d in bin logs; do
@@ -53,14 +60,14 @@ BUILD_LOG="${BUILD_LOG:-1}"
 
 # opkg key-build
 if [ -n "$KEY_BUILD" ]; then
-	echo "$KEY_BUILD" > key-build
+	echo "$KEY_BUILD" > $BUILD_KEY
 	CONFIG_SIGNED_PACKAGES="y"
 fi
 
 # apk private-key.pem
 if [ -n "$PRIVATE_KEY" ]; then
-	echo "$PRIVATE_KEY" > private-key.pem
-	openssl ec -in private-key.pem -pubout > public-key.pem
+	echo "$PRIVATE_KEY" > $BUILD_KEY_APK_SEC
+	openssl ec -in $BUILD_KEY_APK_SEC -pubout > $BUILD_KEY_APK_PUB
 	CONFIG_SIGNED_PACKAGES="y"
 fi
 
@@ -250,5 +257,13 @@ if [ "$INDEX" = '1' ];then
 		package/index
 	endgroup
 fi
+
+./scripts/feeds list -s -f | grep -v 'github.com/openwrt/' > bin/packages/$ARCH_PACKAGES/feeds.conf
+
+pushd bin/packages/$ARCH_PACKAGES
+	find . -type f -not -name 'sha256sums' -printf "%P\n" \
+		| sort | xargs -r $STAGING_DIR_HOST/bin/mkhash -n sha256 \
+		| sed -ne 's|^\(.*\) \(.*\)$|\1 *\2|p' > sha256sums
+popd
 
 exit "$RET"
