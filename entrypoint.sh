@@ -78,7 +78,7 @@ fi
 #shellcheck disable=SC2153
 for EXTRA_FEED in $EXTRA_FEEDS; do
 	tr '|' ' ' <<< "$EXTRA_FEED" >> feeds.conf
-	ALL_CUSTOM_FEEDS+="$(cut -f2 -d'|' <<< "$EXTRA_FEED") "
+	ALL_CUSTOM_FEEDS+="$(awk -F'|' '{print $(NF-1)}' <<< "$EXTRA_FEED") "
 done
 
 group "feeds.conf"
