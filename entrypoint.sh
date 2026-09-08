@@ -35,7 +35,9 @@ bash setup.sh
 endgroup
 
 # rules
+group "make defconfig"
 make defconfig
+endgroup
 export USE_APK=$(make val.CONFIG_USE_APK)
 export ARCH_PACKAGES=$(make val.ARCH_PACKAGES)
 export BUILD_KEY="$(make val.BUILD_KEY)"
@@ -70,6 +72,8 @@ if [ -n "$PRIVATE_KEY" ]; then
 	openssl ec -in $BUILD_KEY_APK_SEC -pubout > $BUILD_KEY_APK_PUB
 	CONFIG_SIGNED_PACKAGES="y"
 fi
+
+echo -n > feeds.conf
 
 if [ -z "$NO_DEFAULT_FEEDS" ]; then
 	sed \

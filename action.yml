@@ -13,6 +13,7 @@ runs:
     - env:
         WORKING_DIRECTORY_NAME: GH-ACTION-SDK
         CACHE_REPOSITORY_NAME: openwrt.org-cache
+      name: "◆ Initialize variable"
       run: |
         # GITHUB_ENV
         echo "WORKING_DIRECTORY_NAME=$WORKING_DIRECTORY_NAME" >> "$GITHUB_ENV"
@@ -27,8 +28,8 @@ runs:
     - env:
         DEBIAN_FRONTEND: noninteractive
       shell: bash
+      name: "◆ Initialize Developmen Environment"
       run: |
-        echo "◆ Initialize Developmen Environment"
         # https://openwrt.org/docs/guide-developer/toolchain/install-buildsystem
         # https://github.com/openwrt/buildbot/blob/main/docker/buildworker/Dockerfile#L14
         #
@@ -57,12 +58,13 @@ runs:
         dwarves # for sdk not have pahole host tool
         endgroup
 
-    - run: |
-        echo "◆ Initialize Working directory"
+    - name: "◆ Initialize Working directory"
+      run: |
         mkdir ${{ env.WORKING_DIRECTORY_NAME }}
       shell: bash
 
     - if: inputs.cache == 'true' && !cancelled()
+      name: "◆ Checkout ${{ env.CACHE_REPOSITORY_NAME }} repository"
       uses: actions/checkout@v6
       with:
         token: ${{ inputs.token }}
@@ -74,8 +76,8 @@ runs:
       env:
         TARGETBRANCH: ${{ steps.inputs.outputs.version_path || 'snapshots' }}
       shell: bash
+      name: "◆ Checkout ${{ env.TARGETBRANCH }}/${{ env.TARGET }} IB/SDk Cache"
       run: |
-        echo "◆ Checkout ${{ env.TARGETBRANCH }}/${{ env.TARGET }} IB/SDk Cache"
         cd ${{ env.CACHE_REPOSITORY_NAME }}
         git config --local user.name "GitHub Action"
         git config --local user.email "actions-user@users.noreply.github.com"
@@ -109,6 +111,7 @@ runs:
         DOWNLOAD_TYPE: sdk
         DOWNLOAD_FILE: sdk-.*x86_64.tar.[xz|zst]
       shell: bash
+      name: ${{ inputs.cache == 'true' && format('◆ Update and use {0}/{1} IB/SDk Cache => ◆ Build OpenWrt SDK', env.VERSION_PATH, env.TARGET) || '◆ Build OpenWrt SDK' }}
       run: |
         if [ "$CACHE" = "true" ]; then
           echo "◆ Update and use ${{ env.VERSION_PATH }}/${{ env.TARGET }} IB/SDk Cache"
@@ -116,11 +119,12 @@ runs:
           bash ${{ github.action_path }}/cache.sh
           popd
         fi
+        #
         echo "◆ Build OpenWrt SDK"
         cd ${{ env.WORKING_DIRECTORY_NAME }}
         bash ${{ github.action_path }}/entrypoint.sh
 
-    - run: |
-        echo "◆ Remove Working directory"
+    - name: "◆ Remove Working directory"
+      run: |
         rm -rf ${{ env.WORKING_DIRECTORY_NAME }} ${{ env.CACHE_REPOSITORY_NAME }}
       shell: bash

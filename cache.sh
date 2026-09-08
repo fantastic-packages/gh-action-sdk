@@ -26,25 +26,25 @@ if [ -f "$file_hash" ]; then
 	# check hash
 	if sha256sum -c $file_hash; then
 		need_update=
-		echo "IB/SDK cache has been used"
+		echo "🎉 IB/SDK cache has been used."
 	fi
 fi
 #
 if [ -n "$need_update" ]; then
-	echo "IB/SDK downloading"
+	echo "📢 IB/SDK downloading..."
 	rm -vrf $file_name ${file_name}.*
 	err=1 && until [ $err = 0 ]; do
 		axel -q -H "User-Agent: $USER_AGENT" -n8 "$FILE_HOST/$DOWNLOAD_PATH/$file_name"
-		grep -qi "$file_hash" <<< "$(sha256sum $file_name | cut -f1 -d" ")" && err=0 || err=$?
+		sha256sum -c <(echo $file_hash $file_name) && err=0 || err=$?
 	done
-	echo "IB/SDK download successful"
+	echo "🎉 IB/SDK download successful."
 fi
 # Take out imagebuilder/sdk archive
 cp $file_name $GITHUB_WORKSPACE/$WORKING_DIRECTORY_NAME/
 
 # update imagebuilder/sdk cache
 if [ -n "$need_update" ]; then
-	echo "IB/SDK uploading"
+	echo "📢 IB/SDK uploading..."
 	git reset --mixed HEAD~1
 	find * -maxdepth 1 -not -name "$file_name" -exec rm -vrf {} \;
 	echo "$file_hash *$file_name" > $file_hash
@@ -56,7 +56,7 @@ if [ -n "$need_update" ]; then
 	git add .
 	git commit -m "Upload IB/SDK cache"
 	git push -f
-	echo "IB/SDK upload successful"
+	echo "🎉 IB/SDK upload successful."
 fi
 
 popd
