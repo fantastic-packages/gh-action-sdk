@@ -65,7 +65,7 @@ runs:
 
     - if: inputs.cache == 'true' && !cancelled()
       name: "◆ Checkout ${{ env.CACHE_REPOSITORY_NAME }} repository"
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
         token: ${{ inputs.token }}
         repository: ${{ github.repository_owner }}/${{ env.CACHE_REPOSITORY_NAME }}
