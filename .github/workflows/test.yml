@@ -12,8 +12,8 @@ jobs:
       matrix:
         release:
           - master
-          - 25.12.3
-          - 24.10.6
+          - 25.12.5
+          - 24.10.7
         arch:
           - aarch64_generic
           - mips_24kc
@@ -27,7 +27,7 @@ jobs:
             target: x86/64
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Add test directories
         run: mkdir artifacts feed
