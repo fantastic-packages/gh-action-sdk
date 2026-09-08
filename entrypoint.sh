@@ -34,7 +34,9 @@ bash setup.sh
 endgroup
 
 # rules
+group "make defconfig"
 make defconfig
+endgroup
 export ARCH_PACKAGES=$(make val.ARCH_PACKAGES)
 export BUILD_KEY="$(make val.BUILD_KEY)"
 export STAGING_DIR_HOST="$(make val.STAGING_DIR_HOST)"
@@ -59,6 +61,8 @@ if [ -n "$KEY_BUILD" ]; then
 	echo "$KEY_BUILD" > $BUILD_KEY
 	CONFIG_SIGNED_PACKAGES="y"
 fi
+
+echo -n > feeds.conf
 
 if [ -z "$NO_DEFAULT_FEEDS" ]; then
 	sed \

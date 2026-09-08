@@ -6,6 +6,7 @@ runs:
   steps:
     - env:
         WORKING_DIRECTORY_NAME: GH-ACTION-SDK
+      name: "◆ Initialize variable"
       run: |
         # GITHUB_ENV
         echo "WORKING_DIRECTORY_NAME=$WORKING_DIRECTORY_NAME" >> "$GITHUB_ENV"
@@ -19,8 +20,8 @@ runs:
     - env:
         DEBIAN_FRONTEND: noninteractive
       shell: bash
+      name: "◆ Initialize Developmen Environment"
       run: |
-        echo "◆ Initialize Developmen Environment"
         # https://openwrt.org/docs/guide-developer/toolchain/install-buildsystem
         # https://github.com/openwrt/buildbot/blob/main/docker/buildworker/Dockerfile#L14
         #
@@ -49,8 +50,8 @@ runs:
         dwarves # for sdk not have pahole host tool
         endgroup
 
-    - run: |
-        echo "◆ Initialize Working directory"
+    - name: "◆ Initialize Working directory"
+      run: |
         mkdir ${{ env.WORKING_DIRECTORY_NAME }}
       shell: bash
 
@@ -66,12 +67,12 @@ runs:
         FILE_HOST: ${{ env.UPSTREAM_URL || env.FILE_HOST }}
         DOWNLOAD_FILE: sdk-.*x86_64.tar.[xz|zst]
       shell: bash
+      name: "◆ Build OpenWrt SDK"
       run: |
-        echo "◆ Build OpenWrt SDK"
         cd ${{ env.WORKING_DIRECTORY_NAME }}
         bash ${{ github.action_path }}/entrypoint.sh
 
-    - run: |
-        echo "◆ Remove Working directory"
+    - name: "◆ Remove Working directory"
+      run: |
         rm -rf ${{ env.WORKING_DIRECTORY_NAME }}
       shell: bash
