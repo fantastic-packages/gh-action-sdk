@@ -31,7 +31,7 @@ if [ -f "$file_hash" ]; then
 fi
 #
 if [ -n "$need_update" ]; then
-	echo "📢 IB/SDK downloading..."
+	echo "⏳ IB/SDK downloading..."
 	rm -vrf $file_name ${file_name}.*
 	err=1 && until [ $err = 0 ]; do
 		axel -q -H "User-Agent: $USER_AGENT" -n8 "$FILE_HOST/$DOWNLOAD_PATH/$file_name"
@@ -44,7 +44,7 @@ cp $file_name $GITHUB_WORKSPACE/$WORKING_DIRECTORY_NAME/
 
 # update imagebuilder/sdk cache
 if [ -n "$need_update" ]; then
-	echo "📢 IB/SDK uploading..."
+	echo "⏳ IB/SDK uploading..."
 	git reset --mixed HEAD~1
 	find * -maxdepth 1 -not -name "$file_name" -exec rm -vrf {} \;
 	echo "$file_hash *$file_name" > $file_hash
