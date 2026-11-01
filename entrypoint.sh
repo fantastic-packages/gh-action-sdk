@@ -116,7 +116,6 @@ make defconfig
 endgroup
 
 group "llvm.download-ci-llvm fix"
-# Set Rust build arg llvm.download-ci-llvm to false.
 unCI() {
 	unset CI GITHUB_ACTIONS
 	local func="$1"; shift
@@ -124,7 +123,9 @@ unCI() {
 		"$func" "$@"
 	fi
 }
-#sed -i 's|\(--set=llvm\.download-ci-llvm\)=true|\1=false|' feeds/packages/lang/rust/Makefile
+# Set Rust build arg llvm.download-ci-llvm to false.
+sed -i 's|\(--set=llvm\.download-ci-llvm\)=\S*|\1='"$DOWNLOAD_CI_LLVM"'|' feeds/packages/lang/rust/Makefile
+sed -n '/--set=llvm\.download-ci-llvm/p' feeds/packages/lang/rust/Makefile
 endgroup
 
 if [ -z "$PACKAGES" ]; then

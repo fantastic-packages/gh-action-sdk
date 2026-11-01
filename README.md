@@ -46,6 +46,7 @@ jobs:
         with:
           cache: false # enable caching for downloaded imagebuilder/sdk, you needs to create an empty `openwrt.org-cache` repository
           token: ${{ secrets.NEW_PERSONAL_ACCESS_TOKEN }} # only required when `cache` is enabled, used to push content to the `openwrt.org-cache` repository
+          download-ci-llvm: false
         env:
           TARGET: ${{ matrix.target }}
           VERSION: ${{ matrix.release }}
